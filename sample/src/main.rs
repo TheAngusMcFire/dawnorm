@@ -57,4 +57,26 @@ async fn main() {
     let del = ctx.posts().delete(&ri).await.unwrap();
     dbg!(del);
     
+    let mut x = ctx.posts().filter_pk(5).first().await.unwrap();
+    dbg!(x);
+
+    ctx.posts()
+        .filter(format!("{} is null", PostFields::body()), parms!())
+        .update_field(PostFields::body(), "placeholder")
+        .await.unwrap();
+    x = ctx.posts().filter_pk(5).first().await.unwrap();
+    dbg!(x);
+
+    let all = ctx.posts()
+        .order_by(PostFields::id(), Ordering::ASC)
+        .to_vec().await.unwrap();
+    dbg!(all);
+
+    let any = ctx.posts()
+        .filter(format!("{} is not null", PostFields::body()), parms!())
+        .any().await.unwrap();
+
+    dbg!(any);
+
 }
+ 

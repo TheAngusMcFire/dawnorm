@@ -196,5 +196,15 @@ impl<T: Entity> DbSet<T> {
         let ret = self.client.execute(query, &[&value]).await?;
         Ok(ret == 1)
     }
+
+    pub async fn update_field<U: ToSql + Sync + 'static>(mut self, field: &str, value: U) -> Result<u64, crate::Error> {
+        if self.filter.is_none() { panic!("filter must be set") }
+        let filter = self.filter.take().unwrap();
+        let mut ps : Vec<&(dyn ToSql + Sync)> = filter.1.iter().map(|x| x.as_ref()).collect();
+        ps.push(&value);
+        let query = &format!("UPDATE {} SET {} = ${} WHERE {};", self.table_name, field, ps.len(), filter.0);
+        let row = self.client.execute(query, ps.as_slice()).await?;
+        Ok(row)
+    }
 }
 
