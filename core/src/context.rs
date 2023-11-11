@@ -2,7 +2,7 @@ use std::{sync::Arc};
 
 use tokio_postgres::{Client, types::ToSql};
 
-use crate::Entity;
+use crate::{Entity, Error};
 
 #[macro_export]
 macro_rules! dbset {
@@ -80,6 +80,11 @@ impl<T: Entity> DbSet<T> {
         self
     }
 
+    pub fn filter_pk<U: ToSql + Sync + 'static>(mut self, value: U) -> Self {
+        self.filter = Some((format!("{} = $1", T::primary_key_name()), parms!(value)));
+        self
+    }
+
     fn select_query(&mut self, single: bool) -> (String, Vec<Box<dyn ToSql + Sync>>) {
         let mut parms : Vec<Box<dyn ToSql + Sync>>  = Vec::new();
         let filt = if self.filter.is_some() {
@@ -120,7 +125,7 @@ impl<T: Entity> DbSet<T> {
     }
 
     // **** CRUD fucntions **** \\
-    pub async fn first(mut self) -> Result<Option<T>, crate::Error> {
+    pub async fn try_first(mut self) -> Result<Option<T>, crate::Error> {
         let (query, parms) = self.select_query(true);
         let ps : Vec<&(dyn ToSql + Sync)> = parms.iter().map(|x| x.as_ref()).collect();
         let mut row = self.client.query(&query, ps.as_slice()).await?;
@@ -131,6 +136,20 @@ impl<T: Entity> DbSet<T> {
             },
             _ => panic!("this should never happen with first")
         })
+    }
+
+    pub async fn first(self) -> Result<T, crate::Error> {
+        match self.try_first().await? {
+            Some(x) => Ok(x),
+            None => Err(Error::NoResult)
+        }
+    }
+
+    pub async fn any(self) -> Result<bool, crate::Error> {
+        match self.try_first().await? {
+            Some(_) => Ok(true),
+            None => Ok(false)
+        }
     }
 
     pub async fn to_vec(mut self) -> Result<Vec<T>, crate::Error> {
@@ -169,6 +188,12 @@ impl<T: Entity> DbSet<T> {
         let (query, parms) = T::get_delete_query(obj, &self.table_name);
         let ps : Vec<&(dyn ToSql + Sync)> = parms.iter().map(|x| x.as_ref()).collect();
         let ret = self.client.execute(&query, ps.as_slice()).await?;
+        Ok(ret == 1)
+    }
+
+    pub async fn delete_pk<U: ToSql + Sync + 'static>(self, value: U) -> Result<bool, crate::Error> {
+        let query = &format!("DELETE FROM {} WHERE {} = $1;", self.table_name, T::primary_key_name());
+        let ret = self.client.execute(query, &[&value]).await?;
         Ok(ret == 1)
     }
 }

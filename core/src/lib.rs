@@ -6,7 +6,8 @@ use tokio_postgres::Row;
 
 #[derive(Debug)]
 pub enum Error {
-    TokioPostgres(tokio_postgres::Error)
+    TokioPostgres(tokio_postgres::Error),
+    NoResult
 }
 
 impl From<tokio_postgres::Error> for Error {

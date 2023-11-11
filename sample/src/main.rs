@@ -47,8 +47,12 @@ async fn main() {
     let ri = ctx.posts().insert(i).await.unwrap();
     dbg!(&ri);
 
-    let mut to_update = ctx.posts().filter("id=$1", parms![10]).first()
-        .await.unwrap().unwrap();
+    let mut to_update = ctx.posts()
+        .filter_pk(10)
+        .first()
+        .await
+        .unwrap();
+    
     dbg!(&to_update);
     to_update.body = Some("this was updated".into());
     let updated = ctx.posts().update(to_update).await.unwrap();
