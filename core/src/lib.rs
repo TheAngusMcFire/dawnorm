@@ -1,12 +1,15 @@
 pub mod context;
 pub mod migration;
 
+use thiserror::Error;
 use tokio_postgres::Row;
 
 
-#[derive(Debug)]
+#[derive(Error, Debug)]
 pub enum Error {
+    #[error("Postgres Error: {0}")]
     TokioPostgres(tokio_postgres::Error),
+    #[error("No Result Found")]
     NoResult
 }
 
