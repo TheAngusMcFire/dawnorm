@@ -1,4 +1,4 @@
-use std::{sync::Arc};
+use std::sync::Arc;
 
 use tokio_postgres::{Client, types::ToSql};
 

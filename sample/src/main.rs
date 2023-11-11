@@ -3,7 +3,7 @@ mod migrations;
 use dawnorm::{context::*, parms};
 use std::sync::Arc;
 
-use tokio_postgres::{Client, NoTls, types::ToSql};
+use tokio_postgres::{Client, NoTls};
 
 #[derive(dawnorm_codegen::Entity, Debug)]
 pub struct Post {
@@ -52,7 +52,7 @@ async fn main() {
         .first()
         .await
         .unwrap();
-    
+
     dbg!(&to_update);
     to_update.body = Some("this was updated".into());
     let updated = ctx.posts().update(to_update).await.unwrap();

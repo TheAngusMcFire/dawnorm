@@ -1,10 +1,11 @@
 use proc_macro::TokenStream;
+use syn::DeriveInput;
+/*
 use syn::{
     DeriveInput, Ident,
     Meta::{List, NameValue},
     NestedMeta::Meta,
 };
-
 fn get_mapper_meta_items(attr: &syn::Attribute) -> Option<Vec<syn::NestedMeta>> {
     if attr.path.segments.len() == 1 && attr.path.segments[0].ident == "entity" {
         match attr.parse_meta() {
@@ -60,7 +61,7 @@ fn parse_table_attr(ast: &DeriveInput) -> String {
 
     table_name.expect("declare table name: #[pg_mapper(table = \"foo\")]")
 }
-
+*/
 
 #[proc_macro_derive(Entity, attributes(entity))]
 pub fn postgres_entity(input: TokenStream) -> TokenStream {

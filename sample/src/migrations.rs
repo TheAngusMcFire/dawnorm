@@ -44,7 +44,7 @@ use dawnorm::migration::Migrator;
 /// | `bit_vec::BitVec`               | BIT, VARBIT                         |
 /// | `eui48::MacAddress`             | MACADDR                             |
 
-pub fn build_migrator() -> Migrator {
+pub fn _build_migrator() -> Migrator {
     Migrator::new().add_up(
         "initial-migration",
         r#"

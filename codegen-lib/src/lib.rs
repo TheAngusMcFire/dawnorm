@@ -160,7 +160,7 @@ mod tests {
             }
         );
 
-        let mut ast: syn::DeriveInput = syn::parse2(ts).expect("Couldn't parse item");
+        let ast: syn::DeriveInput = syn::parse2(ts).expect("Couldn't parse item");
 
         let out = generate_entity_code(&ast);
 

@@ -27,7 +27,7 @@ impl Migrator {
         self
     }
 
-    pub async fn migrate(client: &Client) -> Result<(), Error> {
+    pub async fn migrate(_client: &Client) -> Result<(), Error> {
         todo!()
     }
 }
