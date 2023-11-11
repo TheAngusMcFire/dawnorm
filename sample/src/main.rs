@@ -34,6 +34,8 @@ async fn main() {
         }
     });
 
+    migrations::build_migrator().migrate(&client).await.unwrap();
+
     let ctx = DbContex { client: client.into() };
     let p = ctx.posts()
         .filter(format!("{} = $1 or {} = $2", PostFields::title(), PostFields::id()), parms!["test", 4])

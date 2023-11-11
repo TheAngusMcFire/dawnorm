@@ -44,11 +44,19 @@ use dawnorm::migration::Migrator;
 /// | `bit_vec::BitVec`               | BIT, VARBIT                         |
 /// | `eui48::MacAddress`             | MACADDR                             |
 
-pub fn _build_migrator() -> Migrator {
+pub fn build_migrator() -> Migrator {
     Migrator::new().add_up(
         "initial-migration",
         r#"
     CREATE TABLE posts (
+        id SERIAL PRIMARY KEY,
+        title TEXT NOT NULL,
+        body TEXT
+    );"#,
+    ).add_up(
+        "add-pages",
+        r#"
+    CREATE TABLE pages (
         id SERIAL PRIMARY KEY,
         title TEXT NOT NULL,
         body TEXT
