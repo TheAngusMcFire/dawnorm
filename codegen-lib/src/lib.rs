@@ -185,7 +185,7 @@ mod tests {
             pub struct SomeEntity {
                 id: i32,
                 name: String,
-                optiion: Option<String>,
+                option: Option<String>,
             }
         );
 
