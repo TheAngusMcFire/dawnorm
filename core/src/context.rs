@@ -191,10 +191,19 @@ impl<T: Entity> DbSet<T> {
         Ok(ret == 1)
     }
 
-    pub async fn delete_pk<U: ToSql + Sync + 'static>(self, value: U) -> Result<bool, crate::Error> {
+    pub async fn delete_pk<U: ToSql + Sync + 'static>(&self, value: U) -> Result<bool, crate::Error> {
         let query = &format!("DELETE FROM {} WHERE {} = $1;", self.table_name, T::primary_key_name());
         let ret = self.client.execute(query, &[&value]).await?;
         Ok(ret == 1)
+    }
+
+    pub async fn exec_delete<U: ToSql + Sync + 'static>(mut self) -> Result<u64, crate::Error> {
+        if self.filter.is_none() { panic!("filter must be set") }
+        let filter = self.filter.take().unwrap();
+        let ps : Vec<&(dyn ToSql + Sync)> = filter.1.iter().map(|x| x.as_ref()).collect();
+        let query = &format!("DELETE FROM {} WHERE {};", self.table_name, filter.0);
+        let row = self.client.execute(query, ps.as_slice()).await?;
+        Ok(row)
     }
 
     pub async fn update_field<U: ToSql + Sync + 'static>(mut self, field: &str, value: U) -> Result<u64, crate::Error> {
