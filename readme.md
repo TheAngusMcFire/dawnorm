@@ -2,6 +2,12 @@
 ### Simple orm mapper build with tokio postgres
 
 
+#### Codegen debug
+
+```sh
+cargo watch -c -- make watch_print
+``````
+
 #### Query to nuke whole schema (for debugging)
 ```sql
 
