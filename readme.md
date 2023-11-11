@@ -1,4 +1,8 @@
 
+### Simple orm mapper build with tokio postgres
+
+
+#### Query to nuke whole schema (for debugging)
 ```sql
 
 DO $$ DECLARE
