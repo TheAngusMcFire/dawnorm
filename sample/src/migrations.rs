@@ -45,13 +45,13 @@ use dawnorm::migration::Migrator;
 /// | `eui48::MacAddress`             | MACADDR                             |
 
 pub fn build_migrator() -> Migrator {
-    Migrator::new()
-    .add_up("initial-migration", 
-    r#"
+    Migrator::new().add_up(
+        "initial-migration",
+        r#"
     CREATE TABLE posts (
         id SERIAL PRIMARY KEY,
         title TEXT NOT NULL,
         body TEXT
-    );
-    "#)
+    );"#,
+    )
 }

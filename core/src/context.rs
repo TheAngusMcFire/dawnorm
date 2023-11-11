@@ -129,7 +129,7 @@ impl<T: Entity> DbSet<T> {
             1 => {
                 Some(T::from_row(row.pop().unwrap())?)
             },
-            _ => panic!()
+            _ => panic!("this should never happen with first")
         })
     }
 
@@ -141,15 +141,35 @@ impl<T: Entity> DbSet<T> {
         Ok(res?)
     }
 
-    pub fn add(obj: &T) -> Result<T, crate::Error> {
-        todo!()
+    pub async fn insert(&self, obj: T) -> Result<T, crate::Error> {
+        let (query, parms) = T::get_insert_query(obj, &self.table_name);
+        let ps : Vec<&(dyn ToSql + Sync)> = parms.iter().map(|x| x.as_ref()).collect();
+        let mut row = self.client.query(&query, ps.as_slice()).await?;
+        Ok(match row.len() {
+            1 => {
+                T::from_row(row.pop().unwrap())?
+            },
+            _ => panic!("this should never happen with insert")
+        })
     }
 
-    pub fn update(obj: &T) -> Result<T, crate::Error> {
-        todo!()
+    pub async fn update(&self, obj: T) -> Result<T, crate::Error> {
+        let (query, parms) = T::get_update_query(obj, &self.table_name);
+        let ps : Vec<&(dyn ToSql + Sync)> = parms.iter().map(|x| x.as_ref()).collect();
+        let mut row = self.client.query(&query, ps.as_slice()).await?;
+        Ok(match row.len() {
+            1 => {
+                T::from_row(row.pop().unwrap())?
+            },
+            _ => panic!("this should never happen with insert")
+        })
     }
 
-    pub fn delete(obj: &T) -> Result<(), crate::Error> {
-        todo!()
+    pub async fn delete(&self, obj: &T) -> Result<bool, crate::Error> {
+        let (query, parms) = T::get_delete_query(obj, &self.table_name);
+        let ps : Vec<&(dyn ToSql + Sync)> = parms.iter().map(|x| x.as_ref()).collect();
+        let ret = self.client.execute(&query, ps.as_slice()).await?;
+        Ok(ret == 1)
     }
 }
+
