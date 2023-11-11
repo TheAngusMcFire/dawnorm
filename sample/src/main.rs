@@ -36,8 +36,8 @@ async fn main() {
 
     let ctx = DbContex { client: client.into() };
     let p = ctx.posts()
-        .filter("title = $1 or id = $2", parms!["test", 4])
-        .order_by("title", Ordering::DESC)
+        .filter(format!("{} = $1 or {} = $2", PostFields::title(), PostFields::id()), parms!["test", 4])
+        .order_by(PostFields::title(), Ordering::DESC)
         //.skip(3)
         .take(1)
         .to_vec().await.unwrap();
@@ -47,11 +47,7 @@ async fn main() {
     let ri = ctx.posts().insert(i).await.unwrap();
     dbg!(&ri);
 
-    let mut to_update = ctx.posts()
-        .filter_pk(10)
-        .first()
-        .await
-        .unwrap();
+    let mut to_update = ctx.posts().filter_pk(10).first().await.unwrap();
 
     dbg!(&to_update);
     to_update.body = Some("this was updated".into());

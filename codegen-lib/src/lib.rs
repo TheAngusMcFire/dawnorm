@@ -12,10 +12,39 @@ pub fn generate_entity_code(ast: &DeriveInput) -> TokenStream {
     };
 
     let entity_trait = impl_entity_trait(s, name, impl_generics, ty_generics, where_clause);
+    let entity_fields = impl_entity_fields(s, name, ty_generics, where_clause);
 
     quote::quote! {
         #entity_trait
+
+        #entity_fields
     }
+}
+
+fn impl_entity_fields(
+    s: &DataStruct,
+    name: &Ident,
+    ty_generics: &TypeGenerics,
+    where_clause: &Option<&WhereClause>,
+) -> TokenStream { 
+    let new_name = Ident::new(&format!("{}Fields", name), Span::mixed_site());
+
+    let fields = s.fields.iter().map(|field| {
+        let ident = field.ident.as_ref().unwrap();
+
+        let row_expr = format!(r##"{}"##, ident);
+        quote::quote! {
+            pub fn #ident() -> &'static str { #row_expr }
+        }
+    });
+
+    let tokens = quote::quote! {
+        pub struct #new_name #ty_generics #where_clause { }
+        impl #new_name {
+            #(#fields)*
+        }
+    };
+    tokens
 }
 
 fn impl_entity_trait(
