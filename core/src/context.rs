@@ -80,8 +80,8 @@ impl<T: Entity> DbSet<T> {
         self
     }
 
-    pub fn filter_pk<U: ToSql + Sync + 'static>(mut self, value: U) -> Self {
-        self.filter = Some((format!("{} = $1", T::primary_key_name()), parms!(value)));
+    pub fn filter_pk(mut self, parms: Vec<Box<dyn ToSql + Sync>>) -> Self {
+        self.filter = Some((T::primary_key_filter_query().to_string(), parms));
         self
     }
 
@@ -191,11 +191,11 @@ impl<T: Entity> DbSet<T> {
         Ok(ret == 1)
     }
 
-    pub async fn delete_pk<U: ToSql + Sync + 'static>(&self, value: U) -> Result<bool, crate::Error> {
-        let query = &format!("DELETE FROM {} WHERE {} = $1;", self.table_name, T::primary_key_name());
-        let ret = self.client.execute(query, &[&value]).await?;
-        Ok(ret == 1)
-    }
+    //pub async fn delete_pk<U: ToSql + Sync + 'static>(&self, value: &[&U]) -> Result<bool, crate::Error> {
+    //    let query = &format!("DELETE FROM {} WHERE {} = $1;", self.table_name, T::primary_key_name());
+    //    let ret = self.client.execute(query, &[&value]).await?;
+    //    Ok(ret == 1)
+    //}
 
     pub async fn exec_delete<U: ToSql + Sync + 'static>(mut self) -> Result<u64, crate::Error> {
         if self.filter.is_none() { panic!("filter must be set") }

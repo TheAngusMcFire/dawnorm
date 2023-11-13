@@ -184,8 +184,6 @@ mod tests {
         let ts = quote::quote!(
             pub struct SomeEntity {
                 id: i32,
-                name: String,
-                option: Option<String>,
             }
         );
 

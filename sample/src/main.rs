@@ -49,7 +49,7 @@ async fn main() {
     let ri = ctx.posts().insert(i).await.unwrap();
     dbg!(&ri);
 
-    let mut to_update = ctx.posts().filter_pk(10).first().await.unwrap();
+    let mut to_update = ctx.posts().filter_pk(parms!(5)).first().await.unwrap();
 
     dbg!(&to_update);
     to_update.body = Some("this was updated".into());
@@ -59,14 +59,14 @@ async fn main() {
     let del = ctx.posts().delete(&ri).await.unwrap();
     dbg!(del);
     
-    let mut x = ctx.posts().filter_pk(5).first().await.unwrap();
+    let mut x = ctx.posts().filter_pk(parms!(2)).first().await.unwrap();
     dbg!(x);
 
     ctx.posts()
         .filter(format!("{} is null", PostFields::body()), parms!())
         .update_field(PostFields::body(), "placeholder")
         .await.unwrap();
-    x = ctx.posts().filter_pk(5).first().await.unwrap();
+    x = ctx.posts().filter_pk(parms!(5)).first().await.unwrap();
     dbg!(x);
 
     let all = ctx.posts()

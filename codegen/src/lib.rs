@@ -1,6 +1,6 @@
 use proc_macro::TokenStream;
 use syn::DeriveInput;
-/*
+
 use syn::{
     DeriveInput, Ident,
     Meta::{List, NameValue},
@@ -61,7 +61,7 @@ fn parse_table_attr(ast: &DeriveInput) -> String {
 
     table_name.expect("declare table name: #[pg_mapper(table = \"foo\")]")
 }
-*/
+
 
 #[proc_macro_derive(Entity, attributes(entity))]
 pub fn postgres_entity(input: TokenStream) -> TokenStream {
