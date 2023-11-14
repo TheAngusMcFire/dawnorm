@@ -67,7 +67,6 @@ pub fn generate_entity_code(ast: &DeriveInput) -> TokenStream {
     };
 
     let codegen_data = get_codegen_data(&s);
-    dbg!(&codegen_data);
 
     let entity_trait = impl_entity_trait(s, name, impl_generics, ty_generics, where_clause, &codegen_data);
     let entity_fields = impl_entity_fields(s, name, ty_generics, where_clause);
