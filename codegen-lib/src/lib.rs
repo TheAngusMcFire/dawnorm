@@ -164,6 +164,7 @@ fn impl_entity_trait(
     .map(|x| quote::quote!(self.#x));
 
     let sql_fiels = code_gen_data.query_fields.join(", ");
+    let key_constrint = generate_key_constraint(&code_gen_data.key_fields, 0);
 
     let tokens = quote::quote! {
         impl #impl_generics dawnorm::Entity for #name #ty_generics #where_clause {
@@ -175,6 +176,10 @@ fn impl_entity_trait(
 
             fn sql_fields() -> &'static str {
                 #sql_fiels
+            }
+
+            fn sql_key_constrint() -> &'static str {
+                #key_constrint
             }
 
             fn get_insert_query(self, table_name: &str) -> (String, Vec<Box<dyn tokio_postgres::types::ToSql + Sync>>) {

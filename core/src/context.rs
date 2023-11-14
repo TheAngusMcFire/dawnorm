@@ -80,10 +80,10 @@ impl<T: Entity> DbSet<T> {
         self
     }
 
-    //pub fn filter_pk(mut self, parms: Vec<Box<dyn ToSql + Sync>>) -> Self {
-    //    self.filter = Some((T::primary_key_filter_query().to_string(), parms));
-    //    self
-    //}
+    pub fn filter_pk(mut self, parms: Vec<Box<dyn ToSql + Sync>>) -> Self {
+        self.filter = Some((T::sql_key_constrint().to_string(), parms));
+        self
+    }
 
     fn select_query(&mut self, single: bool) -> (String, Vec<Box<dyn ToSql + Sync>>) {
         let mut parms : Vec<Box<dyn ToSql + Sync>>  = Vec::new();
