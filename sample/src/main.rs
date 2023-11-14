@@ -7,6 +7,7 @@ use tokio_postgres::{Client, NoTls};
 
 #[derive(dawnorm_codegen::Entity, Debug)]
 pub struct Post {
+    #[key_noinsert]
     id: i32,
     title: String,
     body: Option<String>,
@@ -39,18 +40,19 @@ async fn main() {
     let ctx = DbContex { client: client.into() };
     let p = ctx.posts()
         .filter(format!("{} = $1 or {} = $2", PostFields::title(), PostFields::id()), parms!["test", 4])
-        .order_by(PostFields::title(), Ordering::DESC)
+        .order_by(PostFields::id(), Ordering::ASC)
         //.skip(3)
-        .take(1)
+        //.take(1)
         .to_vec().await.unwrap();
     dbg!(p);
     
     let i = Post { id: 0, title: "this is cool".into(), body: Some("this is the body".into()) };
     let ri = ctx.posts().insert(i).await.unwrap();
     dbg!(&ri);
-
-    let mut to_update = ctx.posts().filter_pk(parms!(5)).first().await.unwrap();
-
+    
+    //let mut to_update = ctx.posts().filter_pk(parms!(5)).first().await.unwrap();
+    
+    /*
     dbg!(&to_update);
     to_update.body = Some("this was updated".into());
     let updated = ctx.posts().update(to_update).await.unwrap();
@@ -79,6 +81,7 @@ async fn main() {
         .any().await.unwrap();
 
     dbg!(any);
+     */
 
 }
  
