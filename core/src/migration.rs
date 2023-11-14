@@ -47,7 +47,7 @@ impl Migrator {
             let mig = client
                 .query("SELECT * FROM __dawnorm_schema_migrations WHERE name = $1", &[&migration.name]).await?;
             if mig.is_empty() {
-                client.execute(&migration.up_sql, &[]).await.unwrap();
+                client.batch_execute(&migration.up_sql).await.unwrap();
                 client.execute("INSERT INTO __dawnorm_schema_migrations (name) VALUES ($1)", &[&migration.name]).await.unwrap();
             }
         }

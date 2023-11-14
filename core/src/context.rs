@@ -10,8 +10,8 @@ macro_rules! dbset {
     // creates a function named `$func_name`.
     // The `ident` designator is used for variable/function names.
     ($table_name:ident, $type:ident) => {
-        pub fn $table_name(&self) -> DbSet<$type> {
-            DbSet::new(self.client.clone(), stringify!($table_name).into())
+        pub fn $table_name(&self) -> dawnorm::context::DbSet<$type> {
+            dawnorm::context::DbSet::new(self.client.clone(), stringify!($table_name).into())
         }
     };
 }
