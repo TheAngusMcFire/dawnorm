@@ -42,7 +42,7 @@ pub struct DbSet<T: Entity> {
     table_name: String,
     skip: Option<usize>,
     take: Option<usize>,
-    filter: Option<(String, Vec<Box<dyn ToSql + Sync>>)>,
+    filter: Option<(String, Vec<Box<dyn ToSql + Send + Sync>>)>,
     ordering: Vec<DbSetOrdering>
 }
 
@@ -75,18 +75,18 @@ impl<T: Entity> DbSet<T> {
         self
     }
 
-    pub fn filter<S: Into<String>>(mut self, filter: S, parms: Vec<Box<dyn ToSql + Sync>>) -> Self {
+    pub fn filter<S: Into<String>>(mut self, filter: S, parms: Vec<Box<dyn ToSql + Send + Sync>>) -> Self {
         self.filter = Some((filter.into(), parms));
         self
     }
 
-    pub fn filter_pk(mut self, parms: Vec<Box<dyn ToSql + Sync>>) -> Self {
+    pub fn filter_pk(mut self, parms: Vec<Box<dyn ToSql + Send + Sync>>) -> Self {
         self.filter = Some((T::sql_key_constrint().to_string(), parms));
         self
     }
 
-    fn select_query(&mut self, single: bool) -> (String, Vec<Box<dyn ToSql + Sync>>) {
-        let mut parms : Vec<Box<dyn ToSql + Sync>>  = Vec::new();
+    fn select_query(&mut self, single: bool) -> (String, Vec<Box<dyn ToSql + Send + Sync>>) {
+        let mut parms : Vec<Box<dyn ToSql + Send + Sync>>  = Vec::new();
         let filt = if self.filter.is_some() {
             let filter = self.filter.take().unwrap();
             parms = filter.1;
@@ -127,7 +127,7 @@ impl<T: Entity> DbSet<T> {
     // **** CRUD fucntions **** \\
     pub async fn try_first(mut self) -> Result<Option<T>, crate::Error> {
         let (query, parms) = self.select_query(true);
-        let ps : Vec<&(dyn ToSql + Sync)> = parms.iter().map(|x| x.as_ref()).collect();
+        let ps : Vec<&(dyn ToSql + Sync)> = parms.iter().map(|x| x.as_ref() as &(dyn ToSql + Sync)).collect();
         let mut row = self.client.query(&query, ps.as_slice()).await?;
         Ok(match row.len() {
             0 => None,
@@ -154,7 +154,7 @@ impl<T: Entity> DbSet<T> {
 
     pub async fn to_vec(mut self) -> Result<Vec<T>, crate::Error> {
         let (query, parms) = self.select_query(false);
-        let ps : Vec<&(dyn ToSql + Sync)> = parms.iter().map(|x| x.as_ref()).collect();
+        let ps : Vec<&(dyn ToSql + Sync)> = parms.iter().map(|x| x.as_ref() as &(dyn ToSql + Sync)).collect();
         let row = self.client.query(&query, ps.as_slice()).await?;
         let res : Result<Vec<T>, crate::Error> = row.into_iter().map(|x| T::from_row(x)).collect();
         Ok(res?)
@@ -162,7 +162,7 @@ impl<T: Entity> DbSet<T> {
 
     pub async fn insert(&self, obj: T) -> Result<T, crate::Error> {
         let (query, parms) = T::get_insert_query(obj, &self.table_name);
-        let ps : Vec<&(dyn ToSql + Sync)> = parms.iter().map(|x| x.as_ref()).collect();
+        let ps : Vec<&(dyn ToSql + Sync)> = parms.iter().map(|x| x.as_ref() as &(dyn ToSql + Sync)).collect();
         let mut row = self.client.query(&query, ps.as_slice()).await?;
         Ok(match row.len() {
             1 => {
@@ -174,7 +174,7 @@ impl<T: Entity> DbSet<T> {
 
     pub async fn update(&self, obj: T) -> Result<T, crate::Error> {
         let (query, parms) = T::get_update_query(obj, &self.table_name);
-        let ps : Vec<&(dyn ToSql + Sync)> = parms.iter().map(|x| x.as_ref()).collect();
+        let ps : Vec<&(dyn ToSql + Sync)> = parms.iter().map(|x| x.as_ref() as &(dyn ToSql + Sync)).collect();
         let mut row = self.client.query(&query, ps.as_slice()).await?;
         Ok(match row.len() {
             1 => {
@@ -186,7 +186,7 @@ impl<T: Entity> DbSet<T> {
 
     pub async fn delete(&self, obj: &T) -> Result<bool, crate::Error> {
         let (query, parms) = T::get_delete_query(obj, &self.table_name);
-        let ps : Vec<&(dyn ToSql + Sync)> = parms.iter().map(|x| x.as_ref()).collect();
+        let ps : Vec<&(dyn ToSql + Sync)> = parms.iter().map(|x| x.as_ref() as &(dyn ToSql + Sync)).collect();
         let ret = self.client.execute(&query, ps.as_slice()).await?;
         Ok(ret == 1)
     }
@@ -194,7 +194,7 @@ impl<T: Entity> DbSet<T> {
     pub async fn exec_delete<U: ToSql + Sync + 'static>(mut self) -> Result<u64, crate::Error> {
         if self.filter.is_none() { panic!("filter must be set") }
         let filter = self.filter.take().unwrap();
-        let ps : Vec<&(dyn ToSql + Sync)> = filter.1.iter().map(|x| x.as_ref()).collect();
+        let ps : Vec<&(dyn ToSql + Sync)> = filter.1.iter().map(|x| x.as_ref() as &(dyn ToSql + Sync)).collect();
         let query = &format!("DELETE FROM {} WHERE {};", self.table_name, filter.0);
         let row = self.client.execute(query, ps.as_slice()).await?;
         Ok(row)
@@ -203,7 +203,7 @@ impl<T: Entity> DbSet<T> {
     pub async fn update_field<U: ToSql + Sync + 'static>(mut self, field: &str, value: U) -> Result<u64, crate::Error> {
         if self.filter.is_none() { panic!("filter must be set") }
         let filter = self.filter.take().unwrap();
-        let mut ps : Vec<&(dyn ToSql + Sync)> = filter.1.iter().map(|x| x.as_ref()).collect();
+        let mut ps : Vec<&(dyn ToSql + Sync)> = filter.1.iter().map(|x| x.as_ref() as &(dyn ToSql + Sync)).collect();
         ps.push(&value);
         let query = &format!("UPDATE {} SET {} = ${} WHERE {};", self.table_name, field, ps.len(), filter.0);
         let row = self.client.execute(query, ps.as_slice()).await?;

@@ -181,15 +181,15 @@ fn impl_entity_trait(
                 #key_constrint
             }
 
-            fn get_insert_query(self, table_name: &str) -> (String, Vec<Box<dyn tokio_postgres::types::ToSql + Sync>>) {
+            fn get_insert_query(self, table_name: &str) -> (String, Vec<Box<dyn tokio_postgres::types::ToSql + Send + Sync>>) {
                 (format!(#insert_query, table_name), dawnorm::parms![#(#insert_parms),*])
             }
 
-            fn get_update_query(self, table_name: &str) -> (String, Vec<Box<dyn tokio_postgres::types::ToSql + Sync>>) {
+            fn get_update_query(self, table_name: &str) -> (String, Vec<Box<dyn tokio_postgres::types::ToSql + Send + Sync>>) {
                 (format!(#update_query, table_name), dawnorm::parms![#(#update_parms),*])
             }
 
-            fn get_delete_query(&self, table_name: &str) -> (String, Vec<Box<dyn tokio_postgres::types::ToSql + Sync>>) {
+            fn get_delete_query(&self, table_name: &str) -> (String, Vec<Box<dyn tokio_postgres::types::ToSql + Send + Sync>>) {
                 (format!(#delete_query, table_name), dawnorm::parms![#(#delete_parms),*])
             }
         }

@@ -30,7 +30,7 @@ pub trait Entity: Sized {
     fn from_row(row: Row) -> Result<Self, Error>;
     fn sql_fields() -> &'static str;
     fn sql_key_constrint() -> &'static str;
-    fn get_insert_query(self, table_name: &str) -> (String, Vec<Box<dyn tokio_postgres::types::ToSql + Sync>>);
-    fn get_update_query(self, table_name: &str) -> (String, Vec<Box<dyn tokio_postgres::types::ToSql + Sync>>);
-    fn get_delete_query(&self, table_name: &str) -> (String, Vec<Box<dyn tokio_postgres::types::ToSql + Sync>>);
+    fn get_insert_query(self, table_name: &str) -> (String, Vec<Box<dyn tokio_postgres::types::ToSql + Send + Sync>>);
+    fn get_update_query(self, table_name: &str) -> (String, Vec<Box<dyn tokio_postgres::types::ToSql + Send + Sync>>);
+    fn get_delete_query(&self, table_name: &str) -> (String, Vec<Box<dyn tokio_postgres::types::ToSql + Send + Sync>>);
 }
