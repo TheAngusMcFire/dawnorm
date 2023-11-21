@@ -163,6 +163,7 @@ fn impl_entity_trait(
     .map(|x| quote::quote!(self.#x));
 
     let sql_fiels = code_gen_data.query_fields.join(", ");
+    let sql_table_fiels = code_gen_data.query_fields.iter().map(|x| format!("{{table_name}}.{}", x)).collect::<Vec<String>>().join(", ");
     let key_constrint = generate_key_constraint(&code_gen_data.key_fields, 0);
 
     let tokens = quote::quote! {
@@ -175,6 +176,10 @@ fn impl_entity_trait(
 
             fn sql_fields() -> &'static str {
                 #sql_fiels
+            }
+
+            fn sql_table_fields(table_name: &str) -> String {
+                format!(#sql_table_fiels)
             }
 
             fn sql_key_constrint() -> &'static str {

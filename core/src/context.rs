@@ -43,7 +43,7 @@ pub struct DbSet<T: Entity> {
     skip: Option<usize>,
     take: Option<usize>,
     filter: Option<(String, Vec<Box<dyn ToSql + Send + Sync>>)>,
-    ordering: Vec<DbSetOrdering>
+    ordering: Vec<DbSetOrdering>,
 }
 
 impl<T: Entity> DbSet<T> {
