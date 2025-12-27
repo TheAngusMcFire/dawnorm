@@ -86,6 +86,10 @@ impl<T: Entity> DbSet<T> {
     }
 
     fn select_query(&mut self, single: bool) -> (String, Vec<Box<dyn ToSql + Send + Sync>>) {
+        self.select_query_with_fields(single, T::sql_fields())
+    }
+
+    fn select_query_with_fields(&mut self, single: bool, fields: &str) -> (String, Vec<Box<dyn ToSql + Send + Sync>>) {
         let mut parms : Vec<Box<dyn ToSql + Send + Sync>>  = Vec::new();
         let filt = if self.filter.is_some() {
             let filter = self.filter.take().unwrap();
@@ -118,9 +122,9 @@ impl<T: Entity> DbSet<T> {
         };
         
         if single {
-            (format!("SELECT {} FROM {} {} {} LIMIT 1;", T::sql_fields(), &self.table_name, filt, order), parms)
+            (format!("SELECT {} FROM {} {} {} LIMIT 1;", fields, &self.table_name, filt, order), parms)
         } else {
-            (format!("SELECT {} FROM {} {} {} {} {};", T::sql_fields(), &self.table_name, filt, order, take, skip), parms)
+            (format!("SELECT {} FROM {} {} {} {} {};", fields, &self.table_name, filt, order, take, skip), parms)
         }
     }
 
